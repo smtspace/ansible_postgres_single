@@ -40,6 +40,14 @@
         update_cache: no
       loop: "{{ postgres_packages | list }}"
 
+    - name: "Set {{ pg_user }} limits"
+      pam_limits:
+        domain: "{{ item.domain }}"
+        limit_type: "{{ item.type }}"
+        limit_item: "{{ item.item }}"
+        value: "{{ item.value }}"
+      loop: "{{ postgres_user_limits | list | unique }}"
+
     - name: "Create PGDATA directory"
       file:
         path: "{{ pg_data_dir }}"
@@ -136,14 +144,6 @@
         owner: "{{ pg_user }}"
         group: "{{ pg_user }}"
         mode: 0700
-
-    - name: "Set {{ pg_user }} limits"
-      pam_limits:
-        domain: "{{ item.domain }}"
-        limit_type: "{{ item.type }}"
-        limit_item: "{{ item.item }}"
-        value: "{{ item.value }}"
-      loop: "{{ postgres_user_limits | list | unique }}"
 
     - name: "Enable archive mode"
       postgresql_set:
