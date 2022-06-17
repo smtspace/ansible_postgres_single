@@ -4,6 +4,8 @@ pg_data_dir: /data/pg
 pg_user:  postgres
 pg_user_group:  postgres
 
+pg_admin_password: strong_password
+
 pg_archive_compress_util: /bin/gzip
 
 postgres_packages:

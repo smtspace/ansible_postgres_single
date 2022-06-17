@@ -109,11 +109,11 @@
       meta: flush_handlers
 
     - name: "Set postgres user's password"
-      become_user: postgres
+      become_user: "{{ pg_user }}"
       postgresql_user:
         db: postgres
         name: postgres
-        password: "postgres_strong"
+        password: "{{ pg_admin_password }}"
 
     - name: "Allow remote connection to PostgreSQL"
       blockinfile:
