@@ -1,0 +1,173 @@
+- hosts: pg_dev_single
+  become: True
+  vars_files:
+    - vars/main.yaml
+
+  pre_tasks:
+
+    - name: "Stop and disable firewall service"
+      service:
+        name: firewalld
+        state:  stopped
+        enabled:  false
+    
+    - name: "Disable Selinux"
+      ansible.posix.selinux:  # This requires ansible.posix collection installed. "ansible-galaxy collection install ansible.posix"
+          state: disabled
+
+    - name: "Setting kernel parameters"
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        sysctl_set: true
+        reload: true
+      loop: "{{ sysctl_params_dict | list | unique }}"
+
+  tasks:
+
+    - name: "Download PostgreSQL Repository File"
+      yum:
+        name: "{{ postgres_latest_repo_url }}"
+        state: present
+        update_cache: no
+
+    - name: "Install PostgreSQL Packages"
+      yum:
+        name: "{{ item.name }}"
+        state: latest
+        disable_gpg_check: yes
+        update_cache: no
+      loop: "{{ postgres_packages | list }}"
+
+    - name: "Create PGDATA directory"
+      file:
+        path: "{{ pg_data_dir }}"
+        state: directory
+        owner: "{{ pg_user }}"
+        group: "{{ pg_user }}"
+        mode: 0700
+
+    - name: "Edit .bash_profile of postgres user"
+      ansible.builtin.template: 
+        src: templates/.bash_profile.j2
+        dest: /var/lib/pgsql/.bash_profile
+        owner: "{{ pg_user }}"
+        group: "{{ pg_user }}"
+        mode: 0700
+    
+    - name: "Find out if PostgreSQL cluster is initialized"
+      ansible.builtin.stat:
+        path: "{{ pg_data_dir }}/pg_hba.conf"
+      register: flag_postgres_initialized
+    
+    - name: "Initialize PostgreSQL Cluster"
+      command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D {{ pg_data_dir }}"
+      when: not flag_postgres_initialized.stat.exists
+      become_user: "{{ pg_user }}"
+    
+    - name: "Create postgresql service directory"
+      file:
+        path: "/etc/systemd/system/postgresql-{{ postgresql_version }}.service.d"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+    
+    - name: "Create postgresql-{{ postgresql_version }} service"
+      ansible.builtin.template: 
+        src: templates/postgresql_service.j2
+        dest: /etc/systemd/system/postgresql-{{ postgresql_version }}.service.d/override.conf
+        owner: root
+        group: root
+        mode: 0644
+  
+    - name: "Start PostgreSQL service"
+      ansible.builtin.systemd: 
+        name: postgresql-{{ postgresql_version }}.service
+        daemon_reload: yes
+        state: started
+        enabled: true
+
+    - name: "Ensure PostgreSQL is listening on all interfaces"
+      lineinfile:
+        dest={{ pg_data_dir }}/postgresql.conf
+        regexp='^#?listen_addresses\s*='
+        line="listen_addresses = '*'"
+        state=present
+      notify: Restart PostgreSQL
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: "Set postgres user's password"
+      become_user: postgres
+      postgresql_user:
+        db: postgres
+        name: postgres
+        password: "postgres_strong"
+
+    - name: "Allow remote connection to PostgreSQL"
+      blockinfile:
+        dest: "{{ pg_data_dir }}/pg_hba.conf"
+        block: |
+          host    all             all             0.0.0.0/0                md5
+          host    all             all             ::/0                     md5
+      notify: Reload PostgreSQL Config
+
+    - name: "Create arch directory in $PGDATA"
+      file:
+        path: "{{ pg_data_dir }}/arch"
+        state: directory
+        owner: "{{ pg_user }}"
+        group: "{{ pg_user }}"
+        mode: 0700
+
+    - name: "Backup postgresql.conf file"
+      copy:
+        src: "{{ pg_data_dir }}/postgresql.conf"
+        dest: "{{ pg_data_dir }}/backup.postgresql.conf"
+        remote_src: yes
+
+    - name: "Overwrite postgresql.conf file with predefined values"
+      ansible.builtin.template:
+        src: templates/postgresql.conf.j2
+        dest: "{{ pg_data_dir }}/postgresql.conf"
+        owner: "{{ pg_user }}"
+        group: "{{ pg_user }}"
+        mode: 0700
+
+    - name: "Set {{ pg_user }} limits"
+      pam_limits:
+        domain: "{{ item.domain }}"
+        limit_type: "{{ item.type }}"
+        limit_item: "{{ item.item }}"
+        value: "{{ item.value }}"
+      loop: "{{ postgres_user_limits | list | unique }}"
+
+    - name: "Enable archive mode"
+      postgresql_set:
+          name: archive_mode
+          value: 'on'
+
+    - name: "Restart PostgreSQL service"
+      ansible.builtin.systemd: 
+        name: postgresql-{{ postgresql_version }}.service
+        daemon_reload: yes
+        state: restarted      
+      
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql-{{ postgresql_version }}.service
+        state: restarted
+
+    - name: Reload PostgreSQL Config
+      postgresql_query:
+        db: postgres
+        query: select pg_reload_conf()
+
+
+    
+
+      

@@ -1,0 +1,60 @@
+# clear all lines and add below
+listen_addresses = '*'
+max_wal_size = 1GB
+min_wal_size = 80MB
+log_timezone = 'Asia/Istanbul'
+datestyle = 'iso, mdy'
+timezone = 'Asia/Istanbul'
+default_text_search_config = 'pg_catalog.english'
+#------------------------------------------------------------------------------
+# CUSTOMIZED OPTIONS
+#------------------------------------------------------------------------------
+# Add settings for extensions here
+archive_mode = off
+archive_command = '{{ pg_archive_compress_util }} -c %p > {{ pg_data_dir }}/arch/%f.gz'
+wal_log_hints = on
+autovacuum= true
+autovacuum_analyze_scale_factor= 0.02
+autovacuum_max_workers= 5
+autovacuum_naptime= 1s
+autovacuum_vacuum_cost_delay= 20
+autovacuum_vacuum_cost_limit= 200
+autovacuum_vacuum_scale_factor= 0.01
+checkpoint_completion_target= 0.9
+checkpoint_timeout= 15min
+default_statistics_target= 1000
+effective_cache_size={{ (ansible_facts['memtotal_mb'] * 0.5) | int }}MB
+effective_io_concurrency= 2
+log_autovacuum_min_duration= 0
+log_checkpoints= on
+log_connections= false
+log_disconnections= false
+log_filename= 'postgresql-%Y-%m-%d_%H%M%S.log'
+log_line_prefix= '%t [%p]= [%l-1] %quser=%u,db=%d,app=%a,client=%h '
+log_lock_waits= true
+log_min_duration_statement= 5000
+log_rotation_age= 1d
+log_rotation_size= 0
+log_temp_files= 0
+log_truncate_on_rotation= true
+logging_collector= true
+maintenance_work_mem= 256MB
+max_connections= 1000
+max_files_per_process= 4096
+max_locks_per_transaction= 64
+max_prepared_transactions= 0
+max_replication_slots= 10
+max_wal_size= 4GB
+min_wal_size= 2GB
+random_page_cost= 4
+seq_page_cost= 1
+shared_buffers= {{ (ansible_facts['memtotal_mb'] * 0.25) | int }}MB
+superuser_reserved_connections= 3
+track_activity_query_size = 2048
+track_activities= true
+track_counts= true
+track_functions= all
+track_io_timing= true
+max_wal_senders = 10
+wal_buffers= 32MB
+work_mem= 4MB
