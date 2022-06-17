@@ -155,13 +155,7 @@
       postgresql_ext:
         name: "{{ item.name }}"
         db: "postgres"
-      loop: "{{ postgres_extentions | list }}"
-
-    - name: "Restart PostgreSQL service"
-      ansible.builtin.systemd: 
-        name: postgresql-{{ postgresql_version }}.service
-        daemon_reload: yes
-        state: restarted      
+      loop: "{{ postgres_extentions | list }}"   
       
   handlers:
     - name: Restart PostgreSQL
