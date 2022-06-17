@@ -150,10 +150,11 @@
           name: archive_mode
           value: 'on'
 
-    - name: "Create pg_stat_statements extension"
+    - name: "Create extensions"
       postgresql_ext:
-        name: pg_stat_statements
-        db: postgres
+        name: "{{ item.name }}"
+        db: "postgres"
+      loop: "{{ postgres_extentions | list }}"
 
     - name: "Restart PostgreSQL service"
       ansible.builtin.systemd: 

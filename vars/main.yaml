@@ -38,3 +38,8 @@ postgres_user_limits:
   - {domain: "{{ pg_user }}", type: "hard", item: "nofile", value: "200000" }
   - {domain: "{{ pg_user }}", type: "soft", item: "memlock", value: "{{ ((ansible_facts['memtotal_mb'] * 1024 * 0.25) + 100) | int }}" }
   - {domain: "{{ pg_user }}", type: "hard", item: "memlock", value: "{{ ((ansible_facts['memtotal_mb'] * 1024 * 0.25) + 100) | int }}" }
+
+
+postgres_extentions:
+  - {name: "pg_stat_statements"}
+  - {name: "uuid-ossp"}
