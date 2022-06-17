@@ -1,2 +1,3 @@
+
 [pg_dev_single]
 pgsingle ansible_host=192.168.1.119  ansible_user=root
