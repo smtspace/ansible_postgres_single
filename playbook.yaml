@@ -149,6 +149,7 @@
       postgresql_set:
           name: archive_mode
           value: 'on'
+      notify: "Restart PostgreSQL"
 
     - name: "Create extensions"
       postgresql_ext:
