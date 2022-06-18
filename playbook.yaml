@@ -1,3 +1,4 @@
+---
 - hosts: pg_dev_single
   become: True
   vars_files:
