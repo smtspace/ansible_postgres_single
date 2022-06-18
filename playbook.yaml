@@ -25,6 +25,17 @@
         reload: true
       loop: "{{ sysctl_params_dict | list | unique }}"
 
+  handlers:
+    - name: Restart PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql-{{ postgresql_version }}.service
+        state: restarted
+
+    - name: Reload PostgreSQL Config
+      postgresql_query:
+        db: postgres
+        query: select pg_reload_conf()
+
   tasks:
 
     - name: "Download PostgreSQL Repository File"
@@ -65,15 +76,16 @@
         group: "{{ pg_user }}"
         mode: 0700
     
-    - name: "Find out if PostgreSQL cluster is initialized"
-      ansible.builtin.stat:
-        path: "{{ pg_data_dir }}/pg_hba.conf"
-      register: flag_postgres_initialized
+#    - name: "Find out if PostgreSQL cluster is initialized"
+#      ansible.builtin.stat:
+#        path: "{{ pg_data_dir }}/pg_hba.conf"
+#      register: flag_postgres_initialized
     
     - name: "Initialize PostgreSQL Cluster"
       command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D {{ pg_data_dir }}"
-      when: not flag_postgres_initialized.stat.exists
+#      when: not flag_postgres_initialized.stat.exists
       become_user: "{{ pg_user }}"
+      creates: "{{ pg_data_dir }}/pg_hba.conf"
     
     - name: "Create postgresql service directory"
       file:
@@ -157,17 +169,6 @@
         name: "{{ item.name }}"
         db: "postgres"
       loop: "{{ postgres_extentions | list }}"   
-      
-  handlers:
-    - name: Restart PostgreSQL
-      ansible.builtin.systemd:
-        name: postgresql-{{ postgresql_version }}.service
-        state: restarted
-
-    - name: Reload PostgreSQL Config
-      postgresql_query:
-        db: postgres
-        query: select pg_reload_conf()
 
 
     
