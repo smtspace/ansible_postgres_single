@@ -52,7 +52,7 @@
         update_cache: no
       loop: "{{ postgres_packages | list }}"
 
-    - name: "Set {{ pg_user }} limits"
+    - name: "Set {{ pg_user }} OS user limits"
       pam_limits:
         domain: "{{ item.domain }}"
         limit_type: "{{ item.type }}"
@@ -76,14 +76,8 @@
         group: "{{ pg_user }}"
         mode: 0700
     
-#    - name: "Find out if PostgreSQL cluster is initialized"
-#      ansible.builtin.stat:
-#        path: "{{ pg_data_dir }}/pg_hba.conf"
-#      register: flag_postgres_initialized
-    
     - name: "Initialize PostgreSQL Cluster"
       command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D {{ pg_data_dir }}"
-#      when: not flag_postgres_initialized.stat.exists
       become_user: "{{ pg_user }}"
       args:
         creates: "{{ pg_data_dir }}/pg_hba.conf"
