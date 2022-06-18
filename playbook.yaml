@@ -38,7 +38,7 @@
 
   tasks:
 
-    - name: "Download PostgreSQL Repository File"
+    - name: "Download & Install PostgreSQL Repository"
       yum:
         name: "{{ postgres_latest_repo_url }}"
         state: present
