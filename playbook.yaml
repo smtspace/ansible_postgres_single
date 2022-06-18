@@ -85,7 +85,8 @@
       command: "/usr/pgsql-{{ postgresql_version }}/bin/initdb -D {{ pg_data_dir }}"
 #      when: not flag_postgres_initialized.stat.exists
       become_user: "{{ pg_user }}"
-      creates: "{{ pg_data_dir }}/pg_hba.conf"
+      args:
+        creates: "{{ pg_data_dir }}/pg_hba.conf"
     
     - name: "Create postgresql service directory"
       file:
