@@ -9,10 +9,10 @@ pg_admin_password: strong_password
 pg_archive_compress_util: /bin/gzip
 
 postgres_packages:
-  - {name: "postgresql{{ postgresql_version }}"}
-  - {name: "postgresql{{ postgresql_version }}-server"}
-  - {name: "postgresql{{ postgresql_version }}-contrib"}
-  - {name: "postgresql{{ postgresql_version }}-libs"}
+  - {name: "postgresql{{ postgresql_version }}", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-server", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-contrib", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-libs", state: "present"}
   - {name: "python-psycopg2"}
 
 
