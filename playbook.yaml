@@ -47,7 +47,7 @@
     - name: "Install PostgreSQL Packages"
       yum:
         name: "{{ item.name }}"
-        state: present
+        state: "{{ item.state }}"
         disable_gpg_check: yes
         update_cache: no
       loop: "{{ postgres_packages | list }}"
