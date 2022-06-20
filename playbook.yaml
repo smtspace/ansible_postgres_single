@@ -5,9 +5,9 @@
     - vars/main.yaml
 
   roles:
-    - role: firewall
-    - role: selinux
-    - role: sysctl
+    - firewall
+    - selinux
+    - sysctl
 
   handlers:
     - name: Restart PostgreSQL
