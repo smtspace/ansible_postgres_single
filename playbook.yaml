@@ -4,26 +4,10 @@
   vars_files:
     - vars/main.yaml
 
-  pre_tasks:
-
-    - name: "Stop and disable firewall service"
-      service:
-        name: firewalld
-        state:  stopped
-        enabled:  false
-    
-    - name: "Disable Selinux"
-      ansible.posix.selinux:  # This requires ansible.posix collection installed. "ansible-galaxy collection install ansible.posix"
-          state: disabled
-
-    - name: "Setting kernel parameters"
-      sysctl:
-        name: "{{ item.name }}"
-        value: "{{ item.value }}"
-        state: present
-        sysctl_set: true
-        reload: true
-      loop: "{{ sysctl_params_dict | list | unique }}"
+  roles:
+    - role: firewall
+    - role: selinux
+    - role: sysctl
 
   handlers:
     - name: Restart PostgreSQL
