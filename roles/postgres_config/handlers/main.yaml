@@ -1,0 +1,10 @@
+---
+    - name: Restart PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql-{{ postgresql_version }}.service
+        state: restarted
+
+    - name: Reload PostgreSQL Config
+      postgresql_query:
+        db: postgres
+        query: select pg_reload_conf()
