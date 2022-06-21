@@ -4,5 +4,5 @@
         path: /etc/hosts
         regexp: "{{ etc_hosts_regexp }}"
         line: |
-          "{{ etc_hosts_entry }}"
+          {{ etc_hosts_entry }}
         state: present
