@@ -1,3 +1,3 @@
 
 etc_hosts_regexp: "^{{ ansible_facts['enp0s3']['ipv4']['address'] }}"
-etc_hosts_entry: "{{ ansible_facts['enp0s3']['ipv4']['address'] }} {{ ansible_facts['nodename'] }} {{ ansible_facts['hostname'] }}"
+etc_hosts_entry: "\n{{ ansible_facts['enp0s3']['ipv4']['address'] }} {{ ansible_facts['nodename'] }} {{ ansible_facts['hostname'] }}\n"
