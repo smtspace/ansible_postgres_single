@@ -12,11 +12,9 @@
       args:
         warn: false
       when: "'[x] ' not in postgresql_module_result.stdout"
-  when: installation_method == "repo" and
-        ansible_os_family == "RedHat" and
+  when: ansible_os_family == "RedHat" and
         ansible_distribution_major_version >= '8'
   ignore_errors: true
-  tags: install_postgres
 
 - name: "Install PostgreSQL Packages"
   yum:
