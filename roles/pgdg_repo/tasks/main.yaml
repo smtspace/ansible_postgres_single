@@ -4,3 +4,4 @@
         name: "{{ postgres_latest_repo_url }}"
         state: present
         update_cache: no
+        disable_gpg_check: yes

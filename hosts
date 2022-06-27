@@ -1,3 +1,4 @@
 
 [pg_dev_single]
 pgsingle ansible_host=10.0.2.40  ansible_user=root
+pgsinglec8 ansible_host=10.0.2.41  ansible_user=root

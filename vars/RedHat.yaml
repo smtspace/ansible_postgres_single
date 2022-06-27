@@ -1,0 +1,51 @@
+---
+postgres_latest_repo_url: "http://download.postgresql.org/pub/repos/yum/reporpms/EL-{{ ansible_distribution_major_version }}-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
+
+
+postgres_packages:
+  - {name: "postgresql{{ postgresql_version }}", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-server", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-contrib", state: "present"}
+  - {name: "postgresql{{ postgresql_version }}-libs", state: "present"}
+
+postgres_os_specific_packages:
+  RedHat-7:
+    - python-psycopg2
+  RedHat-8:
+    - python3-psycopg2
+  RedHat-9:
+    - python3-psycopg2
+common_pg_packages:
+    - "{{ postgres_os_specific_packages[ansible_os_family ~ '-' ~ ansible_distribution_major_version] }}"
+    - "postgresql{{ postgresql_version }}"
+    - "postgresql{{ postgresql_version }}-server"
+    - "postgresql{{ postgresql_version }}-contrib"
+    - "postgresql{{ postgresql_version }}-libs"
+
+
+sysctl_params_dict:
+  - {name: net.ipv4.ip_nonlocal_bind, value: "1" }
+  - {name: net.ipv4.ip_forward, value: "1" }
+  - {name: net.ipv4.ip_local_port_range, value: "1024 65535" }
+  - {name: net.core.netdev_max_backlog, value: "10000" }
+  - {name: net.ipv4.tcp_max_syn_backlog, value: "8192" }
+  - {name: net.core.somaxconn, value: "65535" }
+  - {name: vm.swappiness, value: "1" }
+  - {name: vm.min_free_kbytes, value: "102400" }
+  - {name: vm.dirty_expire_centisecs, value: "1000" }
+  - {name: vm.dirty_background_bytes, value: "67108864" }
+  - {name: vm.dirty_bytes, value: "536870912" }
+  - {name: vm.zone_reclaim_mode, value: "0" }
+  - {name: kernel.numa_balancing, value: "0" }
+  - {name: kernel.sched_migration_cost_ns, value: "5000000" }
+  - {name: kernel.sched_autogroup_enabled, value: "0" }
+#  - {name: vm.nr_hugepages, value: "{{ (ansible_facts['memtotal_mb'] * 0.25) / 2 | int }}"}
+
+
+postgres_user_limits:
+  - {domain: "{{ pg_user }}", type: "soft", item: "nofile", value: "65536" }
+  - {domain: "{{ pg_user }}", type: "hard", item: "nofile", value: "200000" }
+  - {domain: "{{ pg_user }}", type: "soft", item: "memlock", value: "{{ ((ansible_facts['memtotal_mb'] * 1024 * 0.25) + 100) | int }}" }
+  - {domain: "{{ pg_user }}", type: "hard", item: "memlock", value: "{{ ((ansible_facts['memtotal_mb'] * 1024 * 0.25) + 100) | int }}" }
+
+
